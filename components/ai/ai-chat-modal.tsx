@@ -26,10 +26,10 @@ interface AIChatModalProps {
 }
 
 const phaseColorConfig: Record<string, { badge: string; text: string }> = {
-  menstrual:  { badge: 'bg-rose-100 text-rose-700',   text: 'text-rose-700' },
+  menstrual: { badge: 'bg-rose-100 text-rose-700', text: 'text-rose-700' },
   follicular: { badge: 'bg-amber-100 text-amber-700', text: 'text-amber-700' },
-  ovulation:  { badge: 'bg-green-100 text-green-700', text: 'text-green-700' },
-  luteal:     { badge: 'bg-violet-100 text-violet-700', text: 'text-violet-700' },
+  ovulation: { badge: 'bg-green-100 text-green-700', text: 'text-green-700' },
+  luteal: { badge: 'bg-violet-100 text-violet-700', text: 'text-violet-700' },
 }
 
 const SUGGESTED_PROMPTS = [
@@ -122,9 +122,9 @@ export function AIChatModal({ profile, phaseInfo }: AIChatModalProps) {
               </span>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleClose} className="h-7 text-xs text-muted-foreground">
+          {/* <Button variant="ghost" size="sm" onClick={handleClose} className="h-7 text-xs text-muted-foreground">
             Close
-          </Button>
+          </Button> */}
         </DialogHeader>
 
         {/* Messages */}
