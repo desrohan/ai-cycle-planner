@@ -178,21 +178,21 @@ export function TasksClient({ tasks: initialTasks, userId, phaseInfo, profile, t
     <div className="space-y-6">
       {/* Top Bar Controls */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(v) => v && setViewMode(v as any)}>
-            <ToggleGroupItem value="list" aria-label="List view" className="px-3">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(v) => v && setViewMode(v as any)} className="w-full sm:w-auto">
+            <ToggleGroupItem value="list" aria-label="List view" className="flex-1 px-3">
               <List className="h-4 w-4 mr-2" /> List
             </ToggleGroupItem>
-            <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-3">
+            <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 px-3">
               <CalendarIcon className="h-4 w-4 mr-2" /> Calendar
             </ToggleGroupItem>
           </ToggleGroup>
 
           {viewMode === 'calendar' && (
-            <ToggleGroup type="single" variant="outline" value={calViewMode} onValueChange={(v) => v && setCalViewMode(v as any)} className="flex">
-              <ToggleGroupItem value="day" className="px-3 text-xs">Day</ToggleGroupItem>
-              <ToggleGroupItem value="week" className="px-3 text-xs">Week</ToggleGroupItem>
-              <ToggleGroupItem value="month" className="px-3 text-xs">Month</ToggleGroupItem>
+            <ToggleGroup type="single" variant="outline" value={calViewMode} onValueChange={(v) => v && setCalViewMode(v as any)} className="flex w-full sm:w-auto">
+              <ToggleGroupItem value="day" className="flex-1 px-3 text-xs">Day</ToggleGroupItem>
+              <ToggleGroupItem value="week" className="flex-1 px-3 text-xs">Week</ToggleGroupItem>
+              <ToggleGroupItem value="month" className="flex-1 px-3 text-xs">Month</ToggleGroupItem>
             </ToggleGroup>
           )}
 
