@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { format, parseISO, subDays, differenceInDays } from 'date-fns'
+import { format, parseISO, subDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { CheckCircle2, Droplets } from 'lucide-react'
 
