@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { format, parseISO, subDays } from 'date-fns'
+import { format, parseISO, subDays, differenceInDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { CheckCircle2, Droplets } from 'lucide-react'
 
@@ -32,11 +32,11 @@ const ENERGY_LEVELS = [
   { value: 'high', label: 'High', color: 'bg-green-100 border-green-300 text-green-700' },
 ]
 
-const phaseColors: Record<string, string> = {
-  menstrual: 'bg-rose-400',
-  follicular: 'bg-amber-400',
-  ovulation: 'bg-green-400',
-  luteal: 'bg-violet-400',
+const phaseStyles: Record<string, { bg: string, strongBg: string, ring: string, text: string, label: string }> = {
+  menstrual: { bg: 'bg-rose-100', strongBg: 'bg-rose-400', ring: 'bg-rose-400/30', text: 'text-rose-500', label: 'PERIOD' },
+  follicular: { bg: 'bg-amber-100', strongBg: 'bg-amber-400', ring: 'bg-amber-400/30', text: 'text-amber-600', label: 'FOLLICULAR' },
+  ovulation: { bg: 'bg-[#d8f4fc]', strongBg: 'bg-[#75dcf5]', ring: 'bg-[#75dcf5]/40', text: 'text-[#5bcded]', label: 'OVULATION' },
+  luteal: { bg: 'bg-violet-100', strongBg: 'bg-violet-400', ring: 'bg-violet-400/30', text: 'text-violet-600', label: 'LUTEAL' },
 }
 
 export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseInfo, today }: CycleTrackerClientProps) {
@@ -96,11 +96,32 @@ export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseI
   const calendarDays = Array.from({ length: 35 }, (_, i) => {
     const d = subDays(new Date(today), 34 - i)
     const ds = format(d, 'yyyy-MM-dd')
-    const phase = profile.last_period_date
-      ? getPhaseForDate(d, profile.last_period_date, profile.cycle_length, profile.period_length)
-      : null
+    let phase: string | null = null
+    let cycleDay: number | null = null
+
+    if (profile.last_period_date) {
+      const lastPeriod = new Date(profile.last_period_date)
+      const lpTime = new Date(lastPeriod.getFullYear(), lastPeriod.getMonth(), lastPeriod.getDate()).getTime()
+      const dTime = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+      const daysSince = Math.floor((dTime - lpTime) / (1000 * 60 * 60 * 24))
+
+      cycleDay = ((daysSince % profile.cycle_length) + profile.cycle_length) % profile.cycle_length + 1
+
+      if (cycleDay <= profile.period_length) phase = 'menstrual'
+      else if (cycleDay <= 13) phase = 'follicular'
+      else if (cycleDay <= 16) phase = 'ovulation'
+      else phase = 'luteal'
+    }
+
     const hasData = cycleData.some((cd) => cd.date === ds)
-    return { date: ds, phase, hasData, isToday: ds === today }
+    return {
+      date: ds,
+      phase,
+      cycleDay,
+      hasData,
+      isToday: ds === today,
+      dayOfWeek: d.getDay()
+    }
   })
 
   return (
@@ -111,36 +132,81 @@ export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseI
           <CardTitle className="text-base font-semibold">Last 5 weeks</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-y-3 pt-6 pb-2 relative z-0">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-              <div key={i} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
+              <div key={i} className="text-center text-[12px] font-medium text-muted-foreground/70 mb-2">{d}</div>
             ))}
-            {calendarDays.map(({ date, phase, hasData, isToday: isTodayDate }) => (
-              <button
-                key={date}
-                onClick={() => handleDateSelect(date)}
-                className={cn(
-                  'relative flex h-8 w-full items-center justify-center rounded-md text-xs transition-all',
-                  selectedDate === date ? 'ring-2 ring-primary ring-offset-1' : '',
-                  isTodayDate ? 'font-bold text-primary' : 'text-foreground',
-                  'hover:bg-accent',
-                )}
-              >
-                {format(parseISO(date), 'd')}
-                {phase && (
-                  <div className={cn('absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full', phaseColors[phase])} />
-                )}
-                {hasData && (
-                  <div className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                )}
-              </button>
-            ))}
+            {calendarDays.map(({ date, phase, cycleDay, hasData, isToday: isTodayDate, dayOfWeek }, i) => {
+              const prevPhase = i > 0 ? calendarDays[i - 1].phase : null
+              const nextPhase = i < calendarDays.length - 1 ? calendarDays[i + 1].phase : null
+
+              const isFirstDayOfPhase = phase && (i === 0 || prevPhase !== phase || dayOfWeek === 0)
+              const isLastDayOfPhase = phase && (i === calendarDays.length - 1 || nextPhase !== phase || dayOfWeek === 6)
+
+              const isMainPhaseDay =
+                (phase === 'menstrual' && cycleDay === (profile.period_length > 1 ? 2 : 1)) ||
+                (phase === 'ovulation' && cycleDay === 15)
+
+              const pStyle = phase ? phaseStyles[phase] : null
+
+              return (
+                <button
+                  key={date}
+                  onClick={() => handleDateSelect(date)}
+                  className="relative flex h-11 w-full items-center justify-center text-sm transition-all focus:outline-none group"
+                >
+                  {/* Background Pill */}
+                  {phase && pStyle && (
+                    <div
+                      className={cn(
+                        'absolute inset-y-1 w-full z-0',
+                        pStyle.bg,
+                        isFirstDayOfPhase ? 'rounded-l-full ml-1 w-[calc(100%-4px)]' : '',
+                        isLastDayOfPhase ? 'rounded-r-full mr-1 w-[calc(100%-4px)]' : '',
+                        isFirstDayOfPhase && isLastDayOfPhase ? 'mx-1 w-[calc(100%-8px)]' : ''
+                      )}
+                    />
+                  )}
+
+                  {phase && pStyle && isMainPhaseDay && (
+                    <>
+                      {/* Main Day Highlights */}
+                      <div className={cn("absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase tracking-wider whitespace-nowrap z-20", pStyle.text)}>
+                        {pStyle.label}
+                      </div>
+                      <div className={cn('absolute inset-0 m-auto h-10 w-10 rounded-full z-10', pStyle.ring)} />
+                      <div className={cn('absolute inset-0 m-auto h-[1.8rem] w-[1.8rem] rounded-full z-10', pStyle.strongBg)} />
+                    </>
+                  )}
+
+                  {/* Date Text */}
+                  <span className={cn(
+                    "relative z-20 text-[15px]",
+                    isMainPhaseDay ? "text-white font-medium" : "text-foreground group-hover:bg-accent/40 rounded-full w-8 h-8 flex items-center justify-center",
+                    isTodayDate && !isMainPhaseDay ? "font-bold text-primary" : "",
+                    !isMainPhaseDay && selectedDate === date ? "bg-accent/80 font-semibold" : ""
+                  )}>
+                    {format(parseISO(date), 'd')}
+                  </span>
+
+                  {/* Selection Indicator on Main Day */}
+                  {selectedDate === date && isMainPhaseDay && (
+                    <div className="absolute inset-0 m-auto h-11 w-11 rounded-full border border-foreground/30 z-20" />
+                  )}
+
+                  {/* Data indicator */}
+                  {hasData && (
+                    <div className={cn("absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full z-20", isMainPhaseDay ? "bg-white" : selectedDate === date ? "bg-primary" : "bg-muted-foreground")} />
+                  )}
+                </button>
+              )
+            })}
           </div>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {Object.entries(phaseColors).map(([phase, color]) => (
-              <span key={phase} className="flex items-center gap-1.5 text-xs text-muted-foreground capitalize">
-                <div className={cn('h-2 w-2 rounded-full', color)} />
-                {phase}
+          <div className="mt-4 flex flex-wrap gap-4 px-2">
+            {Object.entries(phaseStyles).map(([phase, style]) => (
+              <span key={phase} className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                <div className={cn('h-3 w-3 rounded-full', style.strongBg)} />
+                {style.label}
               </span>
             ))}
           </div>
