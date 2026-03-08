@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { Heart, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Heart, ArrowRight, ArrowLeft, CheckCircle2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { signOut } from '@/app/auth/actions'
 
 interface OnboardingFormProps {
   userId: string
@@ -75,7 +76,16 @@ export function OnboardingForm({ userId, existingProfile }: OnboardingFormProps)
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-12 relative">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <form action={signOut}>
+          <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground gap-2 hover:text-foreground">
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Sign out</span>
+          </Button>
+        </form>
+      </div>
+
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="mb-8 text-center">
