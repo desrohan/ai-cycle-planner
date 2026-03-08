@@ -127,12 +127,12 @@ export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseI
   return (
     <div className="space-y-6">
       {/* Mini calendar */}
-      <Card className="border-border">
-        <CardHeader className="pb-3">
+      <Card className="border-border py-4 gap-0">
+        <CardHeader className="px-4 pb-3">
           <CardTitle className="text-base font-semibold">Last 5 weeks</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-y-3 pt-6 pb-2 relative z-0">
+        <CardContent className="px-0">
+          <div className="grid grid-cols-7 gap-y-3 pt-4 pb-2 relative z-0">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
               <div key={i} className="text-center text-[12px] font-medium text-muted-foreground/70 mb-2">{d}</div>
             ))}
@@ -171,7 +171,7 @@ export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseI
                   {phase && pStyle && isMainPhaseDay && (
                     <>
                       {/* Main Day Highlights */}
-                      <div className={cn("absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase tracking-wider whitespace-nowrap z-20", pStyle.text)}>
+                      <div className={cn("absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase tracking-wider whitespace-nowrap z-20", pStyle.text)}>
                         {pStyle.label}
                       </div>
                       <div className={cn('absolute inset-0 m-auto h-10 w-10 rounded-full z-10', pStyle.ring)} />
@@ -182,27 +182,30 @@ export function CycleTrackerClient({ userId, profile, cycleData: initial, phaseI
                   {/* Date Text */}
                   <span className={cn(
                     "relative z-20 text-[15px]",
-                    isMainPhaseDay ? "text-white font-medium" : "text-foreground group-hover:bg-accent/40 rounded-full w-8 h-8 flex items-center justify-center",
-                    isTodayDate && !isMainPhaseDay ? "font-bold text-primary" : "",
-                    !isMainPhaseDay && selectedDate === date ? "bg-accent/80 font-semibold" : ""
+                    isMainPhaseDay ? "text-white font-medium" : "text-foreground group-hover:bg-[#333]/10 rounded-full w-8 h-8 flex items-center justify-center transition-colors",
+                    isTodayDate && !isMainPhaseDay && selectedDate !== date ? "font-bold text-primary" : "",
+                    !isMainPhaseDay && selectedDate === date ? "bg-[#333] hover:bg-[#333] text-white font-semibold shadow-sm" : ""
                   )}>
                     {format(parseISO(date), 'd')}
                   </span>
 
                   {/* Selection Indicator on Main Day */}
                   {selectedDate === date && isMainPhaseDay && (
-                    <div className="absolute inset-0 m-auto h-11 w-11 rounded-full border border-foreground/30 z-20" />
+                    <div className="absolute inset-0 m-auto h-11 w-11 rounded-full border-[2px] border-foreground/30 z-20" />
                   )}
 
-                  {/* Data indicator */}
+                  {/* Data indicator (Shows that symptoms/flow are logged) */}
                   {hasData && (
-                    <div className={cn("absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full z-20", isMainPhaseDay ? "bg-white" : selectedDate === date ? "bg-primary" : "bg-muted-foreground")} />
+                    <div className={cn(
+                      "absolute top-1 right-2 h-[5px] w-[5px] rounded-full z-30 ring-[1.5px] ring-background",
+                      isMainPhaseDay ? "bg-[#333]" : "bg-primary"
+                    )} />
                   )}
                 </button>
               )
             })}
           </div>
-          <div className="mt-4 flex flex-wrap gap-4 px-2">
+          <div className="mt-4 flex flex-wrap gap-4 px-4">
             {Object.entries(phaseStyles).map(([phase, style]) => (
               <span key={phase} className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 <div className={cn('h-3 w-3 rounded-full', style.strongBg)} />
