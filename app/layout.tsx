@@ -7,9 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'FlowSync — Cycle-Aware Task Planner',
+  title: 'FlowSync | Cycle-Aware Task Planner',
   description: 'An AI-powered planner that syncs your tasks with your menstrual cycle phases for optimal energy and productivity.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
